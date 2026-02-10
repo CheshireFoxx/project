@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>�� ���� Ŭ������ ������ ��� ����� �� ����</title>
+  <style>
+    :root {
+      --ink: #1b1f2a;
+      --muted: #5d6576;
+      --accent: #ff6b35;
+      --accent-2: #0f9b8e;
+      --bg: #f7f3ef;
+      --card: #ffffff;
+      --line: rgba(27, 31, 42, 0.12);
+      --shadow: 0 18px 60px rgba(15, 18, 30, 0.18);
+      --radius: 20px;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "SUIT", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 600px at 10% -10%, #ffe7d6 0%, transparent 60%),
+        radial-gradient(900px 500px at 95% 5%, #d5f7f0 0%, transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 1040px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .hero {
+      padding: 52px 48px 38px;
+      background: linear-gradient(130deg, #10131a 0%, #2a2f3a 50%, #1e5b59 100%);
+      color: #f8f3ef;
+      position: relative;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: -40% -10% auto auto;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(255, 107, 53, 0.45), transparent 70%);
+      filter: blur(10px);
+    }
+    .eyebrow {
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      color: rgba(248, 243, 239, 0.72);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 3vw, 2.8rem);
+      margin-bottom: 12px;
+    }
+    .hero p {
+      max-width: 640px;
+      color: rgba(248, 243, 239, 0.78);
+      font-size: 1.02rem;
+    }
+    .content {
+      padding: 40px 48px 56px;
+      display: grid;
+      gap: 32px;
+    }
+    section {
+      background: #fffaf6;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+    }
+    section h2 {
+      font-size: 1.35rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    section h2 span {
+      display: inline-flex;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: #10131a;
+      color: #fffaf6;
+      font-size: 0.95rem;
+      align-items: center;
+      justify-content: center;
+    }
+    .grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .card {
+      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 18px;
+      box-shadow: 0 8px 26px rgba(15, 18, 30, 0.08);
+    }
+    .card h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 107, 53, 0.12);
+      color: #b63f15;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    ul {
+      list-style: none;
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+    }
+    li {
+      padding-left: 18px;
+      position: relative;
+    }
+    li::before {
+      content: "?";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+    .flow {
+      display: grid;
+      gap: 12px;
+    }
+    .flow-item {
+      border-left: 4px solid var(--accent-2);
+      padding: 12px 16px;
+      background: #f4fbf9;
+      border-radius: 12px;
+    }
+    .cta {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .cta .card {
+      background: #10131a;
+      color: #f8f3ef;
+    }
+    .cta .card p {
+      color: rgba(248, 243, 239, 0.75);
+    }
+    .metric {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .metric div {
+      background: #fff;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .metric strong {
+      display: block;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+    .motion {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .motion span {
+      background: rgba(15, 155, 142, 0.1);
+      color: #0b625a;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      display: inline-flex;
+      width: fit-content;
+    }
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    .api-table th,
+    .api-table td {
+      border: 1px solid var(--line);
+      padding: 12px;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    .api-table th {
+      background: #10131a;
+      color: #fffaf6;
+      font-weight: 600;
+    }
+    .api-table tbody tr:nth-child(even) {
+      background: #fafaf8;
+    }
+    .api-endpoint {
+      background: #f4fbf9;
+      border-left: 4px solid var(--accent-2);
+      padding: 14px;
+      border-radius: 10px;
+      margin: 12px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    .method-get {
+      background: rgba(15, 155, 142, 0.15);
+      color: #0b625a;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .method-post {
+      background: rgba(255, 107, 53, 0.15);
+      color: #b63f15;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .method-put {
+      background: rgba(255, 195, 0, 0.15);
+      color: #8b6f00;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .method-delete {
+      background: rgba(220, 53, 69, 0.15);
+      color: #721c24;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .code-block {
+      background: #1b1f2a;
+      color: #d5f7f0;
+      padding: 16px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      margin: 12px 0;
+    }
+    .fade-up {
+      animation: fadeUp 0.9s ease both;
+    }
+    .fade-up:nth-child(2) { animation-delay: 0.08s; }
+    .fade-up:nth-child(3) { animation-delay: 0.16s; }
+    .fade-up:nth-child(4) { animation-delay: 0.24s; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 700px) {
+      body { padding: 16px; }
+      .hero, .content { padding: 28px 22px; }
+      section { padding: 22px; }
+      .hero h1 { font-size: 1.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Instant Insight App</div>
+      <h1>����ڿ��� ������ Ŭ������ ������ �����ϴ� ����� �� ����</h1>
+      <p>�� ���� ������ �ʿ��� ������ �򵵷� ����� ���� ������Դϴ�. ���� Ž�� �ð��� ���̰�, ���� ����ڵ� ���� ���� �ʰ� ����� UX �帧�� �����մϴ�.</p>
+    </section>
+
+    <div class="content">
+      <section class="fade-up">
+        <h2><span>1</span> ��ǥ</h2>
+        <div class="grid">
+          <div class="card">
+            <div class="badge">�ٽ� ��ġ</div>
+            <h3>3�� �� ���� ����</h3>
+            <p>ù ȭ�鿡�� �ʿ��� ī�װ����� �ٷ� �����ϵ��� �����մϴ�.</p>
+          </div>
+          <div class="card">
+            <div class="badge">����</div>
+            <h3>�� ã�� �ʴ� UI</h3>
+            <p>�� ���� ���̰� �帧�� �ϰ��ǰ� �����մϴ�.</p>
+          </div>
+          <div class="card">
+            <div class="badge">�ŷ�</div>
+            <h3>���� ��ó ��Ȯ</h3>
+            <p>������ �ֽż��� ���� �ְ� ������Ʈ �̷��� �����մϴ�.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>2</span> �ٽ� �����</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>���� �亯�� ���ϴ� ������</h3>
+            <ul>
+              <li>�̵� �� ª�� Ȯ��</li>
+              <li>���ã�� �ʼ�</li>
+              <li>���� ������ ����</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>ó�� ����ϴ� �Ϲ� �����</h3>
+            <ul>
+              <li>Ʃ�丮�� �ּ�ȭ</li>
+              <li>ū ��ư�� ��Ȯ�� ��</li>
+              <li>�Ǽ� ���� ����</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>������ ���ϴ� �����</h3>
+            <ul>
+              <li>��� ī�� ����</li>
+              <li>���� 3�� ����</li>
+              <li>��Ʈ���� ����Ʈ ��ȣ</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>3</span> ���� ����</h2>
+        <div class="flow">
+          <div class="flow-item">Ȩ: ������ �ٽ� ī�� 3�� + �˻�â</div>
+          <div class="flow-item">ī�װ���: 6�� ���� ������ ��ư</div>
+          <div class="flow-item">�� ����: ��� �� �ٰ� �� �߰� �ɼ�</div>
+          <div class="flow-item">���� ����: ���� ���� 5�� ����</div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>4</span> �ֿ� ���</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>���� �˻�</h3>
+            <p>�ֱ� �˻� 3���� ��ư���� ������ ��Ž���� ���Դϴ�.</p>
+          </div>
+          <div class="card">
+            <h3>����Ʈ ī��</h3>
+            <p>�ʿ��� ������ ����ϰ� ���ʿ��� ������ ���� ó���մϴ�.</p>
+          </div>
+          <div class="card">
+            <h3>��� ����</h3>
+            <p>ī�� ���� ������ �ƶ��� ������� �ʵ��� �����մϴ�.</p>
+          </div>
+          <div class="card">
+            <h3>��Ȯ�� �˸�</h3>
+            <p>������ ������ ��� �ڵ����� �˸��� ǥ���մϴ�.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>5</span> API 엔드포인트 설계</h2>
+        
+        <h3 style="margin: 20px 0 12px; color: #10131a; font-size: 1.1rem;">📌 기본 정보</h3>
+        <div class="card" style="background: #fff; margin-bottom: 16px;">
+          <ul style="color: #5d6576;">
+            <li><strong>Base URL:</strong> https://api.instantinsight.com/v1</li>
+            <li><strong>인증:</strong> Bearer Token (JWT)</li>
+            <li><strong>응답 형식:</strong> JSON</li>
+            <li><strong>타임아웃:</strong> 30초</li>
+          </ul>
+        </div>
+
+        <h3 style="margin: 20px 0 12px; color: #10131a; font-size: 1.1rem;">🔐 인증 API</h3>
+        
+        <div class="api-endpoint">
+          <span class="method-post">POST</span> /auth/register
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 12px;">
+          <p><strong>설명:</strong> 새로운 사용자 회원가입</p>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>Request:</strong></p>
+          <div class="code-block">{
+  "email": "user@example.com",
+  "password": "securePassword123",
+  "name": "사용자명",
+  "userType": "beginner"
+}</div>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>Response:</strong></p>
+          <div class="code-block">{
+  "success": true,
+  "user": {
+    "id": "usr_123456",
+    "email": "user@example.com",
+    "name": "사용자명",
+    "userType": "beginner"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIs..."
+}</div>
+        </div>
+
+        <div class="api-endpoint">
+          <span class="method-post">POST</span> /auth/login
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 12px;">
+          <p><strong>설명:</strong> 기존 사용자 로그인</p>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>Request:</strong></p>
+          <div class="code-block">{
+  "email": "user@example.com",
+  "password": "securePassword123"
+}</div>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>Response:</strong></p>
+          <div class="code-block">{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
+  "expiresIn": 3600
+}</div>
+        </div>
+
+        <div class="api-endpoint">
+          <span class="method-post">POST</span> /auth/refresh
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 20px;">
+          <p><strong>설명:</strong> 토큰 갱신</p>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>Request:</strong></p>
+          <div class="code-block">{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+}</div>
+        </div>
+
+        <h3 style="margin: 20px 0 12px; color: #10131a; font-size: 1.1rem;">📂 카테고리 API</h3>
+        
+        <div class="api-endpoint">
+          <span class="method-get">GET</span> /categories
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 12px;">
+          <p><strong>설명:</strong> 모든 카테고리 목록 조회 (홈 화면용)</p>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>쿼리 파라미터:</strong></p>
+          <table class="api-table" style="font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th>파라미터</th>
+                <th>타입</th>
+                <th>설명</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>limit</td>
+                <td>number</td>
+                <td>조회할 개수 (기본값: 6)</td>
+              </tr>
+              <tr>
+                <td>sort</td>
+                <td>string</td>
+                <td>정렬 순서 (popular | recent)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>Response:</strong></p>
+          <div class="code-block">{
+  "success": true,
+  "data": [
+    {
+      "id": "cat_001",
+      "name": "기술",
+      "icon": "🚀",
+      "description": "최신 기술 트렌드",
+      "itemCount": 124,
+      "thumbnail": "https://..."
+    }
+  ]
+}</div>
+        </div>
+
+        <div class="api-endpoint">
+          <span class="method-get">GET</span> /categories/:categoryId
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 20px;">
+          <p><strong>설명:</strong> 특정 카테고리의 상세 정보 및 아이템 조회</p>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>Response:</strong></p>
+          <div class="code-block">{
+  "success": true,
+  "data": {
+    "id": "cat_001",
+    "name": "기술",
+    "items": [
+      {
+        "id": "item_001",
+        "title": "AI의 미래",
+        "category": "기술",
+        "saved": false
+      }
+    ]
+  }
+}</div>
+        </div>
+
+        <h3 style="margin: 20px 0 12px; color: #10131a; font-size: 1.1rem;">🔍 검색 API</h3>
+        
+        <div class="api-endpoint">
+          <span class="method-get">GET</span> /search
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 20px;">
+          <p><strong>설명:</strong> 빠른 검색 (3초 내 완료)</p>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>쿼리 파라미터:</strong></p>
+          <table class="api-table" style="font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th>파라미터</th>
+                <th>타입</th>
+                <th>설명</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>q</td>
+                <td>string</td>
+                <td>검색어 (필수)</td>
+              </tr>
+              <tr>
+                <td>limit</td>
+                <td>number</td>
+                <td>조회할 개수 (기본값: 10)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style="margin: 20px 0 12px; color: #10131a; font-size: 1.1rem;">⭐ 저장/북마크 API</h3>
+        
+        <div class="api-endpoint">
+          <span class="method-post">POST</span> /saves
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 12px;">
+          <p><strong>설명:</strong> 아이템 저장</p>
+          <p style="margin-top: 8px; color: #5d6576;"><strong>Request:</strong></p>
+          <div class="code-block">{
+  "itemId": "item_001",
+  "notes": "나중에 읽어봐야겠다"
+}</div>
+        </div>
+
+        <div class="api-endpoint">
+          <span class="method-get">GET</span> /saves
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 12px;">
+          <p><strong>설명:</strong> 사용자가 저장한 아이템 목록</p>
+        </div>
+
+        <div class="api-endpoint">
+          <span class="method-delete">DELETE</span> /saves/:saveId
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 20px;">
+          <p><strong>설명:</strong> 저장된 아이템 삭제</p>
+        </div>
+
+        <h3 style="margin: 20px 0 12px; color: #10131a; font-size: 1.1rem;">👤 사용자 프로필 API</h3>
+        
+        <div class="api-endpoint">
+          <span class="method-get">GET</span> /users/profile
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 12px;">
+          <p><strong>설명:</strong> 현재 로그인한 사용자의 프로필 정보</p>
+        </div>
+
+        <div class="api-endpoint">
+          <span class="method-put">PUT</span> /users/profile
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 20px;">
+          <p><strong>설명:</strong> 사용자 프로필 정보 업데이트</p>
+        </div>
+
+        <h3 style="margin: 20px 0 12px; color: #10131a; font-size: 1.1rem;">📬 알림 API</h3>
+        
+        <div class="api-endpoint">
+          <span class="method-get">GET</span> /notifications
+        </div>
+        <div class="card" style="background: #fff; margin-bottom: 20px;">
+          <p><strong>설명:</strong> 사용자의 알림 목록</p>
+        </div>
+
+        <h3 style="margin: 20px 0 12px; color: #10131a; font-size: 1.1rem;">⚠️ 에러 처리</h3>
+        <div class="card" style="background: #fff;">
+          <p><strong>공통 에러 코드:</strong></p>
+          <table class="api-table" style="font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th>코드</th>
+                <th>상태</th>
+                <th>설명</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>400</td>
+                <td>Bad Request</td>
+                <td>잘못된 요청 파라미터</td>
+              </tr>
+              <tr>
+                <td>401</td>
+                <td>Unauthorized</td>
+                <td>인증 실패 또는 토큰 만료</td>
+              </tr>
+              <tr>
+                <td>403</td>
+                <td>Forbidden</td>
+                <td>접근 권한 없음</td>
+              </tr>
+              <tr>
+                <td>404</td>
+                <td>Not Found</td>
+                <td>요청한 리소스 없음</td>
+              </tr>
+              <tr>
+                <td>429</td>
+                <td>Too Many Requests</td>
+                <td>요청 속도 제한 초과</td>
+              </tr>
+              <tr>
+                <td>500</td>
+                <td>Server Error</td>
+                <td>서버 오류</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>6</span> UI 디자인가이드</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>�ð� ���</h3>
+            <ul>
+              <li>ū ����, ª�� ����</li>
+              <li>��ư�� ī�� �߽�</li>
+              <li>������ ������ ����Ʈ</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>���</h3>
+            <div class="motion">
+              <span>�ε� 0.6�� �� ���̵�</span>
+              <span>ī�� �� �� ��¦ Ȯ��</span>
+              <span>������ �̵��� �¿� �����̵�</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>���ټ�</h3>
+            <ul>
+              <li>�ؽ�Ʈ ��� 4.5:1 �̻�</li>
+              <li>�հ��� ��ġ ���� 44px</li>
+              <li>��� ��� ���</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>6</span> ���� ��ǥ</h2>
+        <div class="metric">
+          <div>
+            <strong>3��</strong>
+            <span>���� �ε�</span>
+          </div>
+          <div>
+            <strong>60 FPS</strong>
+            <span>��ũ��</span>
+          </div>
+          <div>
+            <strong>120MB</strong>
+            <span>�� �뷮</span>
+          </div>
+          <div>
+            <strong>15MB</strong>
+            <span>ĳ�� ������</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>7</span> ���� �ܰ�</h2>
+        <div class="cta">
+          <div class="card">
+            <h3>������Ÿ��</h3>
+            <p>�ٽ� ȭ�� 5���� ������ ������ �帧�� �����մϴ�.</p>
+          </div>
+          <div class="card">
+            <h3>�׽�Ʈ</h3>
+            <p>����� 5�� ������� Ŭ�� ��, ���� �ð� ����.</p>
+          </div>
+          <div class="card">
+            <h3>������ ����</h3>
+            <p>�ֽż� ǥ�⸦ ���� �鿣�� ��Ģ ����.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

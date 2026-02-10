@@ -1,0 +1,393 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>최신 밈 랭킹을 빠르게 보는 모바일 앱 설계</title>
+  <style>
+    :root {
+      --ink: #1b1f2a;
+      --muted: #5d6576;
+      --accent: #ff6b35;
+      --accent-2: #0f9b8e;
+      --bg: #f7f3ef;
+      --card: #ffffff;
+      --line: rgba(27, 31, 42, 0.12);
+      --shadow: 0 18px 60px rgba(15, 18, 30, 0.18);
+      --radius: 20px;
+      --screen-bg: #11131a;
+      --screen-card: #1b1f2a;
+      --screen-muted: #9aa3b2;
+      --screen-accent: #ff7a3c;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "SUIT", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 600px at 10% -10%, #ffe7d6 0%, transparent 60%),
+        radial-gradient(900px 500px at 95% 5%, #d5f7f0 0%, transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 1040px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .hero {
+      padding: 52px 48px 38px;
+      background: linear-gradient(130deg, #10131a 0%, #2a2f3a 50%, #1e5b59 100%);
+      color: #f8f3ef;
+      position: relative;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: -40% -10% auto auto;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(255, 107, 53, 0.45), transparent 70%);
+      filter: blur(10px);
+    }
+    .eyebrow {
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      color: rgba(248, 243, 239, 0.72);
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 3vw, 2.8rem);
+      margin-bottom: 12px;
+    }
+    .hero p {
+      max-width: 640px;
+      color: rgba(248, 243, 239, 0.78);
+      font-size: 1.02rem;
+    }
+    .content {
+      padding: 40px 48px 56px;
+      display: grid;
+      gap: 32px;
+    }
+    section {
+      background: #fffaf6;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+    }
+    section h2 {
+      font-size: 1.35rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    section h2 span {
+      display: inline-flex;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: #10131a;
+      color: #fffaf6;
+      font-size: 0.95rem;
+      align-items: center;
+      justify-content: center;
+    }
+    .grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .card {
+      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 18px;
+      box-shadow: 0 8px 26px rgba(15, 18, 30, 0.08);
+    }
+    .card h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 107, 53, 0.12);
+      color: #b63f15;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    ul {
+      list-style: none;
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+    }
+    li {
+      padding-left: 18px;
+      position: relative;
+    }
+    li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+    .flow {
+      display: grid;
+      gap: 12px;
+    }
+    .flow-item {
+      border-left: 4px solid var(--accent-2);
+      padding: 12px 16px;
+      background: #f4fbf9;
+      border-radius: 12px;
+    }
+    .cta {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .cta .card {
+      background: #10131a;
+      color: #f8f3ef;
+    }
+    .cta .card p {
+      color: rgba(248, 243, 239, 0.75);
+    }
+    .metric {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .metric div {
+      background: #fff;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .metric strong {
+      display: block;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+    .motion {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .motion span {
+      background: rgba(15, 155, 142, 0.1);
+      color: #0b625a;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      display: inline-flex;
+      width: fit-content;
+    }
+    .fade-up {
+      animation: fadeUp 0.9s ease both;
+    }
+    .fade-up:nth-child(2) { animation-delay: 0.08s; }
+    .fade-up:nth-child(3) { animation-delay: 0.16s; }
+    .fade-up:nth-child(4) { animation-delay: 0.24s; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 700px) {
+      body { padding: 16px; }
+      .hero, .content { padding: 28px 22px; }
+      section { padding: 22px; }
+      .hero h1 { font-size: 1.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Meme Radar</div>
+      <h1>최신 밈과 유행을 카테고리별로 훑어보는 앱 설계</h1>
+      <p>로그인 없이 가볍게 들어와 최신 밈을 확인하고, 랭킹을 눌러 요약 정보와 외부 링크로 이동하는 흐름을 핵심으로 설계합니다.</p>
+    </section>
+
+    <div class="content">
+      <section class="fade-up">
+        <h2><span>0</span> 프론트엔드 프로토타입</h2>
+        <p>프론트엔드 설계 시안은 별도 파일로 분리했습니다. 아래 파일에서 실제 UI/인터랙션을 확인할 수 있습니다.</p>
+        <p><strong>프로토타입 파일:</strong> project/meme-prototype.html</p>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>1</span> 목표</h2>
+        <div class="grid">
+          <div class="card">
+            <div class="badge">핵심 가치</div>
+            <h3>3초 내 밈 도달</h3>
+            <p>첫 화면에서 3개 카테고리를 슬라이드로 바로 전환합니다.</p>
+          </div>
+          <div class="card">
+            <div class="badge">경험</div>
+            <h3>랭킹에서 바로 이동</h3>
+            <p>순위를 눌렀을 때 요약 정보와 링크를 즉시 제공합니다.</p>
+          </div>
+          <div class="card">
+            <div class="badge">신뢰</div>
+            <h3>출처와 최신성 표기</h3>
+            <p>수집 시간, 플랫폼 출처를 명확히 표시합니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>2</span> 핵심 사용자</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>짧게 훑어보는 사용자</h3>
+            <ul>
+              <li>이동 중 짧게 확인</li>
+              <li>즐겨찾기 필수</li>
+              <li>결정 빠르게 내림</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>처음 방문한 사용자</h3>
+            <ul>
+              <li>튜토리얼 최소화</li>
+              <li>큰 버튼과 명확한 라벨</li>
+              <li>실수 복구 쉬움</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>유행 맥락이 궁금한 사용자</h3>
+            <ul>
+              <li>왜 유행인지 요약 필요</li>
+              <li>가격/인용 정보 확인</li>
+              <li>원본 링크로 이동</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>3</span> 정보 구조</h2>
+        <div class="flow">
+          <div class="flow-item">홈: 카테고리 슬라이드 3개 (예: 패션 · 영상 · 밈템)</div>
+          <div class="flow-item">랭킹 리스트: 1~10위 카드형 목록</div>
+          <div class="flow-item">상세 보기: 요약 → 유행 이유 → 관련 인물/콘텐츠</div>
+          <div class="flow-item">외부 링크: 구매/원본/출처로 이동</div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>4</span> 주요 기능</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>카테고리 슬라이드</h3>
+            <p>최대 3개 분야를 좌우 슬라이드로 즉시 전환합니다.</p>
+          </div>
+          <div class="card">
+            <h3>랭킹 카드</h3>
+            <p>순위/요약/핵심 키워드만 노출해 스캔 속도를 높입니다.</p>
+          </div>
+          <div class="card">
+            <h3>외부 링크 연결</h3>
+            <p>카테고리에 따라 가격, 착용자, 원본 링크로 분기합니다.</p>
+          </div>
+          <div class="card">
+            <h3>최신성 표시</h3>
+            <p>업데이트 시간과 출처를 카드에 고정 표기합니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>5</span> UI 톤앤매너</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>시각 언어</h3>
+            <ul>
+              <li>큰 제목, 짧은 문장</li>
+              <li>카드형 랭킹 리스트</li>
+              <li>슬라이드 전환 강조</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>모션</h3>
+            <div class="motion">
+              <span>슬라이드 전환 0.25초</span>
+              <span>랭킹 탭 시 하이라이트</span>
+              <span>상세 진입은 바텀 시트</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>접근성</h3>
+            <ul>
+              <li>텍스트 대비 4.5:1 이상</li>
+              <li>손가락 터치 영역 44px</li>
+              <li>링크는 외부 아이콘 표시</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>6</span> 성능 목표</h2>
+        <div class="metric">
+          <div>
+            <strong>3초</strong>
+            <span>최초 로딩</span>
+          </div>
+          <div>
+            <strong>60 FPS</strong>
+            <span>스크롤</span>
+          </div>
+          <div>
+            <strong>2시간</strong>
+            <span>랭킹 갱신 주기</span>
+          </div>
+          <div>
+            <strong>20MB</strong>
+            <span>캐시 프리셋</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="fade-up">
+        <h2><span>7</span> 다음 단계</h2>
+        <div class="cta">
+          <div class="card">
+            <h3>카테고리 확정</h3>
+            <p>3개 분야를 고정하고 아이콘/라벨을 정의합니다.</p>
+          </div>
+          <div class="card">
+            <h3>랭킹 기준 설계</h3>
+            <p>수집 소스와 가중치 규칙을 문서화합니다.</p>
+          </div>
+          <div class="card">
+            <h3>외부 링크 정책</h3>
+            <p>구매/원본/출처 링크 구조를 정의합니다.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+</body>
+</html>
+

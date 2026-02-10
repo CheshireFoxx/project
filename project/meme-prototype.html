@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meme Radar 프론트엔드 프로토타입</title>
+  <link rel="stylesheet" href="meme-prototype.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <main class="device">
+    <div class="status">
+      <span>09:41</span>
+      <span>LTE · 100%</span>
+    </div>
+    <div class="screen">
+      <div class="pill">밈 · 유행 · 챌린지</div>
+      <h1>오늘의 랭킹</h1>
+      <div class="search">키워드 또는 해시태그</div>
+      <div class="meta-row">
+        <label class="meta-label" for="ranking-criteria">랭킹 기준</label>
+        <div class="select-wrap">
+          <button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="select-value">오늘</span>
+          </button>
+          <ul class="select-menu is-hidden" role="listbox" aria-label="랭킹 기준">
+            <li class="select-option selected" role="option" data-value="today">오늘</li>
+            <li class="select-option" role="option" data-value="week">이번주</li>
+            <li class="select-option" role="option" data-value="month">이번달</li>
+            <li class="select-option" role="option" data-value="quarter">최근 3개월</li>
+          </ul>
+          <select id="ranking-criteria" class="meta-select" aria-hidden="true" tabindex="-1">
+            <option value="today" selected>오늘</option>
+            <option value="week">이번주</option>
+            <option value="month">이번달</option>
+            <option value="quarter">최근 3개월</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="slider" data-index="0">
+        <div class="slides">
+          <div class="slide" data-category="meme">
+            <h2>밈</h2>
+            <p class="rank-meta">짤/문구/패러디 중심</p>
+          </div>
+          <div class="slide" data-category="trend">
+            <h2>유행</h2>
+            <p class="rank-meta">옷/음식/아이템 트렌드</p>
+          </div>
+          <div class="slide" data-category="challenge">
+            <h2>챌린지</h2>
+            <p class="rank-meta">숏폼 따라하기, 사운드 기반</p>
+          </div>
+        </div>
+      </div>
+      <div class="slider-controls">
+        <div class="dots">
+          <span class="dot active" data-index="0"></span>
+          <span class="dot" data-index="1"></span>
+          <span class="dot" data-index="2"></span>
+        </div>
+        <div class="nav-btns">
+          <button class="nav-btn" data-dir="prev">이전</button>
+          <button class="nav-btn" data-dir="next">다음</button>
+        </div>
+      </div>
+
+
+      <div class="ranking" id="ranking-list"></div>
+    </div>
+  </main>
+
+  <div class="bottom-sheet" id="detail-sheet" aria-hidden="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <strong id="sheet-title">밈 상세</strong>
+      <button class="sheet-close" id="sheet-close">닫기</button>
+    </div>
+    <div class="sheet-grid" id="sheet-body"></div>
+    <div class="sheet-links" id="sheet-links"></div>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="link-modal" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-title">외부 링크로 이동</div>
+      <p class="modal-text">외부 사이트로 이동합니다. 계속하시겠어요?</p>
+      <div class="modal-actions">
+        <button class="modal-btn ghost" id="modal-cancel" type="button">취소</button>
+        <button class="modal-btn" id="modal-confirm" type="button">이동하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="meme-prototype.js"></script>
+</body>
+</html>

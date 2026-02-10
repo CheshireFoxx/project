@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10분 단위 트래픽 수집 실현 방법</title>
+  <style>
+    :root {
+      --ink: #1b1f2a;
+      --muted: #5d6576;
+      --accent: #ff7a3c;
+      --accent-2: #0f9b8e;
+      --bg: #f6f1ea;
+      --card: #ffffff;
+      --line: rgba(27, 31, 42, 0.12);
+      --shadow: 0 18px 50px rgba(15, 18, 30, 0.16);
+      --radius: 18px;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "SUIT", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 600px at 10% -10%, #ffe9d8 0%, transparent 60%),
+        radial-gradient(900px 500px at 95% 5%, #dff7f2 0%, transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    header {
+      padding: 42px 40px 30px;
+      background: linear-gradient(130deg, #11141c 0%, #2b2f3a 55%, #1a5b58 100%);
+      color: #f8f3ef;
+    }
+    header h1 {
+      font-size: clamp(1.9rem, 2.6vw, 2.5rem);
+      margin-bottom: 10px;
+    }
+    header p {
+      color: rgba(248, 243, 239, 0.78);
+      max-width: 680px;
+    }
+    .content {
+      padding: 36px 40px 48px;
+      display: grid;
+      gap: 20px;
+    }
+    section {
+      background: #fffaf5;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+    }
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h2 span {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #11141c;
+      color: #fffaf5;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+    ul {
+      list-style: none;
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+    }
+    li {
+      padding-left: 16px;
+      position: relative;
+    }
+    li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 122, 60, 0.12);
+      color: #b64a23;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .flow {
+      display: grid;
+      gap: 10px;
+    }
+    .flow-item {
+      background: #f4fbf9;
+      border-left: 4px solid var(--accent-2);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--muted);
+    }
+    .metric {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+    .metric div {
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+    .metric strong {
+      display: block;
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+    @media (max-width: 720px) {
+      body { padding: 16px; }
+      header, .content { padding: 26px 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <h1>10분 단위 트래픽/유행 지표 수집 실현 방법</h1>
+      <p>밈/유행/챌린지 랭킹을 10분 주기로 갱신하기 위한 현실적인 수집 구조를 정리합니다. 핵심은 공식 API + 캐시 + 증분 업데이트입니다.</p>
+    </header>
+
+    <div class="content">
+      <section>
+        <h2><span>1</span> 목표 요약</h2>
+        <div class="metric">
+          <div>
+            <strong>10분</strong>
+            <span>갱신 주기</span>
+          </div>
+          <div>
+            <strong>캐시</strong>
+            <span>읽기 전용 제공</span>
+          </div>
+          <div>
+            <strong>증분</strong>
+            <span>상위 키워드만</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2><span>2</span> 수집 베이스(현실적인 방향)</h2>
+        <div class="grid">
+          <div class="card">
+            <div class="pill">필수</div>
+            <strong>공식 API</strong>
+            <p>유튜브/플랫폼 API로 조회수·좋아요·댓글 등 수치 기반 지표 확보.</p>
+          </div>
+          <div class="card">
+            <div class="pill">보조</div>
+            <strong>공개 트렌드</strong>
+            <p>검색 관심도 지표로 “급상승”을 보정하는 용도.</p>
+          </div>
+          <div class="card">
+            <div class="pill">캐시</div>
+            <strong>결과 저장</strong>
+            <p>사용자는 실시간이 아닌 최신 캐시만 조회.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2><span>3</span> 10분 갱신 파이프라인</h2>
+        <div class="flow">
+          <div class="flow-item">1) 상위 키워드/콘텐츠 목록 선정 (전 회차 상위 + 신규 후보)</div>
+          <div class="flow-item">2) 공식 API로 수치 업데이트 (조회수/좋아요/댓글)</div>
+          <div class="flow-item">3) 증가율 계산 (최근 1시간/24시간 비교)</div>
+          <div class="flow-item">4) 중복 제거 및 키워드 통합 (유사어/해시태그)</div>
+          <div class="flow-item">5) 랭킹 점수 계산 후 캐시에 저장</div>
+        </div>
+      </section>
+
+      <section>
+        <h2><span>4</span> 점수 산식(예시)</h2>
+        <ul>
+          <li>기본 점수 = 조회수 로그값 + 좋아요 가중치 + 댓글 가중치</li>
+          <li>급상승 보정 = 최근 24시간 증가율 × 보정계수</li>
+          <li>최종 점수 = 기본 점수 + 급상승 보정</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><span>5</span> 중복 처리(키워드/콘텐츠)</h2>
+        <ul>
+          <li>띄어쓰기/해시태그/영문 표기 통합</li>
+          <li>유사 키워드 묶기(편집거리/유사도 기준)</li>
+          <li>동일 콘텐츠 ID 중복 제거</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><span>6</span> 운영 현실화 팁</h2>
+        <ul>
+          <li>10분마다 전체 수집 대신 “상위 후보만” 증분 업데이트</li>
+          <li>사용자 화면은 캐시 결과만 노출 (서버 부하 감소)</li>
+          <li>업데이트 시간 표시로 신뢰 확보</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><span>7</span> 다음 단계 제안</h2>
+        <div class="grid">
+          <div class="card">
+            <strong>수집 플랫폼 확정</strong>
+            <p>유튜브/커뮤니티/인스타 중 우선순위 설정</p>
+          </div>
+          <div class="card">
+            <strong>갱신 주기 검증</strong>
+            <p>10분/30분 시뮬레이션 후 비용 비교</p>
+          </div>
+          <div class="card">
+            <strong>MVP 지표 정의</strong>
+            <p>조회/좋아요/댓글 중 핵심 지표 확정</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
