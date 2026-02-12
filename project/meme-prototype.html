@@ -11,7 +11,10 @@
   <main class="device">
     <div class="status">
       <span id="status-time">09:41</span>
-      <span id="status-updated">마지막 갱신 -</span>
+      <div class="status-right">
+        <span id="status-updated">마지막 갱신 -</span>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="theme toggle">테마: 라이트</button>
+      </div>
     </div>
 
     <div class="screen">
@@ -70,11 +73,6 @@
           <button class="nav-btn" data-dir="prev">이전</button>
           <button class="nav-btn" data-dir="next">다음</button>
         </div>
-      </div>
-
-      <div class="meta-line">
-        <span id="meta-summary">기준: 오늘 · 밈</span>
-        <span id="meta-count">0개</span>
       </div>
 
       <div id="ranking-list" class="ranking"></div>

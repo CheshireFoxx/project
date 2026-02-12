@@ -3,144 +3,112 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meme Radar 구현 범위 정리</title>
+  <title>Meme Radar 무료 소스 구현 가이드</title>
   <style>
     :root {
-      --ink: #1b1f2a;
-      --muted: #5d6576;
-      --accent: #ff7a3c;
-      --bg: #f7f3ee;
+      --ink: #111827;
+      --muted: #4b5563;
+      --line: #d1d5db;
       --card: #ffffff;
-      --line: rgba(27, 31, 42, 0.12);
+      --bg: #f7fafc;
+      --accent: #ea580c;
     }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: "SUIT", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-      background: radial-gradient(1000px 500px at 10% -10%, #ffe9d8 0%, transparent 55%), var(--bg);
+      background: var(--bg);
       color: var(--ink);
       padding: 24px;
       line-height: 1.6;
     }
-
     main {
-      max-width: 920px;
+      max-width: 980px;
       margin: 0 auto;
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 18px;
+      border-radius: 16px;
       overflow: hidden;
     }
-
     header {
-      padding: 28px;
-      background: #121722;
-      color: #f8f3ef;
+      background: #111827;
+      color: #f9fafb;
+      padding: 24px;
     }
-
-    header h1 {
-      font-size: 1.8rem;
-      margin-bottom: 8px;
-    }
-
-    header p {
-      color: rgba(248, 243, 239, 0.8);
-    }
-
-    .content {
-      padding: 24px 28px 30px;
-      display: grid;
-      gap: 14px;
-    }
-
+    header h1 { font-size: 1.7rem; margin-bottom: 8px; }
+    header p { color: #d1d5db; }
+    .content { padding: 20px; display: grid; gap: 14px; }
     section {
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 16px;
-      background: #fffaf5;
+      border-radius: 12px;
+      padding: 14px;
+      background: #fff;
     }
-
-    h2 {
-      font-size: 1.1rem;
-      margin-bottom: 8px;
-    }
-
-    ul {
-      list-style: none;
-      display: grid;
-      gap: 6px;
-      color: var(--muted);
-    }
-
-    li {
-      padding-left: 14px;
-      position: relative;
-    }
-
-    li::before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: var(--accent);
-    }
-
-    .ok {
-      color: #0f8b7f;
-      font-weight: 700;
-    }
-
-    .todo {
-      color: #c45b2e;
-      font-weight: 700;
+    h2 { font-size: 1.05rem; margin-bottom: 8px; }
+    ul { list-style: none; display: grid; gap: 6px; color: var(--muted); }
+    li { padding-left: 14px; position: relative; }
+    li::before { content: "•"; position: absolute; left: 0; color: var(--accent); }
+    code {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.92em;
+      color: #111827;
     }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <h1>실행 가능한 구현 범위</h1>
-      <p>실제 API/트래픽 수집은 남겨두고, 앱 동작에 필요한 나머지 요소를 먼저 구현하는 기준 문서</p>
+      <h1>무료 소스 기반 구현 가이드</h1>
+      <p>실제 API 연동을 시작하되, 유료 플랫폼 없이 동작하는 기본 수집 파이프라인</p>
     </header>
+
     <div class="content">
       <section>
-        <h2>현재 구현 상태</h2>
+        <h2>현재 구현 범위</h2>
         <ul>
-          <li><span class="ok">완료</span> 카테고리 슬라이드, 기간 선택, 검색, 랭킹 렌더</li>
-          <li><span class="ok">완료</span> 상세 바텀시트, 외부 링크 이동 확인 모달</li>
-          <li><span class="ok">완료</span> 10분 주기 갱신 스케줄러 골격</li>
-          <li><span class="ok">완료</span> 데이터 소스 분리 구조 (`DataSource.fetchSnapshot`)</li>
+          <li>프론트: 카테고리 슬라이드, 기간 필터, 검색, 상세 패널, 외부 링크 모달</li>
+          <li>서버: <code>/api/snapshot</code> 엔드포인트 추가</li>
+          <li>데이터 소스: Reddit 공개 JSON(무료, 인증키 없이 호출 가능)</li>
+          <li>갱신: 프론트 10분 주기 재요청</li>
         </ul>
       </section>
 
       <section>
-        <h2>미구현 (의도적으로 남김)</h2>
+        <h2>무료 소스 선정</h2>
         <ul>
-          <li><span class="todo">보류</span> 실제 플랫폼 API 호출</li>
-          <li><span class="todo">보류</span> 트래픽 수집/정규화/중복 제거 서버 파이프라인</li>
-          <li><span class="todo">보류</span> 인증키/쿼터/재시도 정책</li>
+          <li>밈: <code>r/memes</code>, <code>r/dankmemes</code>, <code>r/MemeEconomy</code></li>
+          <li>유행: <code>r/streetwear</code>, <code>r/fashion</code>, <code>r/food</code>, <code>r/sneakers</code></li>
+          <li>챌린지: <code>r/challenges</code>, <code>r/dance</code>, <code>r/TikTokCringe</code></li>
         </ul>
       </section>
 
       <section>
-        <h2>API 연결 시 바로 붙일 지점</h2>
+        <h2>서버 실행 방법</h2>
         <ul>
-          <li>`project/meme-prototype.js`의 `DataSource.fetchSnapshot()`</li>
-          <li>반환 스키마는 `{ updatedAt, items }` 유지</li>
-          <li>각 `item`은 `category`, `score`, `detail`, `links` 필드를 포함</li>
+          <li><code>node project/server.js</code></li>
+          <li>브라우저 접속: <code>http://127.0.0.1:8787/meme-prototype.html</code></li>
+          <li>스냅샷 확인: <code>http://127.0.0.1:8787/api/snapshot?period=today</code></li>
         </ul>
       </section>
 
       <section>
-        <h2>다음 구현 순서</h2>
+        <h2>스코어 계산 방식(현재)</h2>
         <ul>
-          <li>1. 서버 API 엔드포인트 먼저 정의</li>
-          <li>2. 목업 데이터와 동일 스키마로 응답 구현</li>
-          <li>3. 클라이언트에서 `USE_MOCK_DATA`를 `false`로 전환</li>
+          <li>기본 점수: <code>ups + num_comments * 2</code></li>
+          <li>기간 보정: <code>today/week/month/quarter</code> 가중치와 시간 감쇠 적용</li>
+          <li>카테고리별 상위 12개 반환, 상위 3개에 배지 부여</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>다음 단계</h2>
+        <ul>
+          <li>중복 키워드 통합(유사 제목 클러스터링)</li>
+          <li>한국 소스 추가(공개 RSS/공식 API 우선)</li>
+          <li>서버 캐시(메모리/파일)로 Reddit 호출량 절감</li>
         </ul>
       </section>
     </div>
