@@ -3,33 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meme Radar 프론트엔드 프로토타입</title>
+  <title>Meme Radar Prototype</title>
   <link rel="stylesheet" href="meme-prototype.css" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
   <main class="device">
     <div class="status">
-      <span>09:41</span>
-      <span>LTE · 100%</span>
+      <span id="status-time">09:41</span>
+      <span id="status-updated">마지막 갱신 -</span>
     </div>
+
     <div class="screen">
       <div class="pill">밈 · 유행 · 챌린지</div>
       <h1>오늘의 랭킹</h1>
-      <div class="search">키워드 또는 해시태그</div>
+
+      <div class="search-wrap">
+        <input id="search-input" type="search" class="search-input" placeholder="키워드 검색" />
+      </div>
+
       <div class="meta-row">
-        <label class="meta-label" for="ranking-criteria">랭킹 기준</label>
+        <label class="meta-label" for="ranking-criteria">기간</label>
         <div class="select-wrap">
           <button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
             <span class="select-value">오늘</span>
           </button>
-          <ul class="select-menu is-hidden" role="listbox" aria-label="랭킹 기준">
+          <ul class="select-menu is-hidden" role="listbox" aria-label="기간">
             <li class="select-option selected" role="option" data-value="today">오늘</li>
             <li class="select-option" role="option" data-value="week">이번주</li>
             <li class="select-option" role="option" data-value="month">이번달</li>
             <li class="select-option" role="option" data-value="quarter">최근 3개월</li>
           </ul>
-          <select id="ranking-criteria" class="meta-select" aria-hidden="true" tabindex="-1">
+          <select id="ranking-criteria" class="native-select" aria-hidden="true" tabindex="-1">
             <option value="today" selected>오늘</option>
             <option value="week">이번주</option>
             <option value="month">이번달</option>
@@ -40,25 +45,26 @@
 
       <div class="slider" data-index="0">
         <div class="slides">
-          <div class="slide" data-category="meme">
+          <section class="slide" data-category="meme">
             <h2>밈</h2>
-            <p class="rank-meta">짤/문구/패러디 중심</p>
-          </div>
-          <div class="slide" data-category="trend">
+            <p class="slide-caption">짤, 문구, 패러디 중심</p>
+          </section>
+          <section class="slide" data-category="trend">
             <h2>유행</h2>
-            <p class="rank-meta">옷/음식/아이템 트렌드</p>
-          </div>
-          <div class="slide" data-category="challenge">
+            <p class="slide-caption">패션, 음식, 아이템 트렌드</p>
+          </section>
+          <section class="slide" data-category="challenge">
             <h2>챌린지</h2>
-            <p class="rank-meta">숏폼 따라하기, 사운드 기반</p>
-          </div>
+            <p class="slide-caption">숏폼 참여형 콘텐츠</p>
+          </section>
         </div>
       </div>
+
       <div class="slider-controls">
         <div class="dots">
-          <span class="dot active" data-index="0"></span>
-          <span class="dot" data-index="1"></span>
-          <span class="dot" data-index="2"></span>
+          <button class="dot active" data-index="0" aria-label="밈"></button>
+          <button class="dot" data-index="1" aria-label="유행"></button>
+          <button class="dot" data-index="2" aria-label="챌린지"></button>
         </div>
         <div class="nav-btns">
           <button class="nav-btn" data-dir="prev">이전</button>
@@ -66,28 +72,33 @@
         </div>
       </div>
 
+      <div class="meta-line">
+        <span id="meta-summary">기준: 오늘 · 밈</span>
+        <span id="meta-count">0개</span>
+      </div>
 
-      <div class="ranking" id="ranking-list"></div>
+      <div id="ranking-list" class="ranking"></div>
+      <div id="empty-state" class="empty-state is-hidden">조건에 맞는 결과가 없습니다.</div>
     </div>
   </main>
 
-  <div class="bottom-sheet" id="detail-sheet" aria-hidden="true">
+  <aside id="detail-sheet" class="bottom-sheet" aria-hidden="true">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <strong id="sheet-title">밈 상세</strong>
-      <button class="sheet-close" id="sheet-close">닫기</button>
+      <strong id="sheet-title">상세 정보</strong>
+      <button id="sheet-close" class="sheet-close">닫기</button>
     </div>
-    <div class="sheet-grid" id="sheet-body"></div>
-    <div class="sheet-links" id="sheet-links"></div>
-  </div>
+    <div id="sheet-body" class="sheet-grid"></div>
+    <div id="sheet-links" class="sheet-links"></div>
+  </aside>
 
-  <div class="modal-backdrop is-hidden" id="link-modal" aria-hidden="true">
+  <div id="link-modal" class="modal-backdrop is-hidden" aria-hidden="true">
     <div class="modal">
       <div class="modal-title">외부 링크로 이동</div>
-      <p class="modal-text">외부 사이트로 이동합니다. 계속하시겠어요?</p>
+      <p class="modal-text">외부 사이트로 이동합니다. 계속하시겠습니까?</p>
       <div class="modal-actions">
-        <button class="modal-btn ghost" id="modal-cancel" type="button">취소</button>
-        <button class="modal-btn" id="modal-confirm" type="button">이동하기</button>
+        <button id="modal-cancel" class="modal-btn ghost" type="button">취소</button>
+        <button id="modal-confirm" class="modal-btn" type="button">이동</button>
       </div>
     </div>
   </div>
