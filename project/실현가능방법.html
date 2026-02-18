@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
@@ -67,10 +67,18 @@
 
     <div class="content">
       <section>
+        <h2>Cloud Run 고정값</h2>
+        <ul>
+          <li>프로젝트 ID: <code>meme-radar-kr-prod</code></li>
+          <li>리전: <code>asia-northeast3</code> (서울)</li>
+          <li>기본 구조: Cloud Run Service(API) + Cloud Run Job(수집) + Cloud Scheduler(10분)</li>
+        </ul>
+      </section>
+      <section>
         <h2>목표 범위</h2>
         <ul>
           <li>앱은 UI만 담당, 데이터 수집/가공/랭킹 계산은 서버 전담</li>
-          <li>서버는 JSON API만 제공: <code>/api/snapshot</code>, <code>/api/health</code></li>
+          <li>서버는 JSON API만 제공: <code>/api/v1/snapshot</code>, <code>/api/health</code></li>
           <li>무료 공개 소스 기반 수집(Reddit 공개 JSON)</li>
           <li>10분 주기 서버 수집 + 캐시 유지(클라이언트 요청 시 즉시 응답)</li>
         </ul>
@@ -90,7 +98,7 @@
         <h2>로컬 운영 확인</h2>
         <ul>
           <li><code>node project/server.js</code></li>
-          <li>스냅샷 확인: <code>curl "http://127.0.0.1:8787/api/snapshot?period=today"</code></li>
+          <li>스냅샷 확인: <code>curl "http://127.0.0.1:8787/api/v1/snapshot?period=today"</code></li>
           <li>상태 확인: <code>curl "http://127.0.0.1:8787/api/health"</code></li>
         </ul>
       </section>
@@ -118,3 +126,6 @@
   </main>
 </body>
 </html>
+
+
+
