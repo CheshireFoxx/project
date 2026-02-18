@@ -118,12 +118,12 @@ function getFilteredItems() {
       if (!query) return true;
       return `${item.title} ${item.reason}`.toLowerCase().includes(query);
     })
-    .sort((a, b) => b.score[appState.period] - a.score[appState.period]);
+    .sort((a, b) => (Number(b?.score?.[appState.period]) || 0) - (Number(a?.score?.[appState.period]) || 0));
 }
 
 function renderRanking() {
   const list = getFilteredItems();
-  const tags = TAGS_BY_CATEGORY[appState.category];
+  const tags = TAGS_BY_CATEGORY[appState.category] || [];
 
   if (!list.length) {
     $rankingList.empty();
@@ -287,6 +287,7 @@ async function boot() {
   applyTheme(savedTheme === "dark" ? "dark" : "light");
   bindEvents();
   syncClock();
+  setCategory(0);
   await refreshSnapshot();
   setInterval(syncClock, 1000);
   setInterval(refreshSnapshot, REFRESH_MS);

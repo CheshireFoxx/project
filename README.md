@@ -1,12 +1,14 @@
 # project
 
-## Run (Free Sources)
+## Run (API Server)
 
 ```powershell
 node project/server.js
 ```
 
-Open:
+## Check API
 
-- `http://127.0.0.1:8787/meme-prototype.html`
-- `http://127.0.0.1:8787/실현가능방법.html`
+```powershell
+curl "http://127.0.0.1:8787/api/health"
+curl "http://127.0.0.1:8787/api/snapshot?period=today"
+```

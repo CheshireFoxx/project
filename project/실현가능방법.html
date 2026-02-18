@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meme Radar 무료 소스 구현 가이드</title>
+  <title>Meme Radar 백엔드 운영 가이드</title>
   <style>
     :root {
       --ink: #111827;
@@ -61,54 +61,57 @@
 <body>
   <main>
     <header>
-      <h1>무료 소스 기반 구현 가이드</h1>
-      <p>실제 API 연동을 시작하되, 유료 플랫폼 없이 동작하는 기본 수집 파이프라인</p>
+      <h1>모바일 앱 백엔드 운영 가이드</h1>
+      <p>웹사이트 배포 없이 앱 스토어 출시를 위한 API 서버 중심 설계</p>
     </header>
 
     <div class="content">
       <section>
-        <h2>현재 구현 범위</h2>
+        <h2>목표 범위</h2>
         <ul>
-          <li>프론트: 카테고리 슬라이드, 기간 필터, 검색, 상세 패널, 외부 링크 모달</li>
-          <li>서버: <code>/api/snapshot</code> 엔드포인트 추가</li>
-          <li>데이터 소스: Reddit 공개 JSON(무료, 인증키 없이 호출 가능)</li>
-          <li>갱신: 프론트 10분 주기 재요청</li>
+          <li>앱은 UI만 담당, 데이터 수집/가공/랭킹 계산은 서버 전담</li>
+          <li>서버는 JSON API만 제공: <code>/api/snapshot</code>, <code>/api/health</code></li>
+          <li>무료 공개 소스 기반 수집(Reddit 공개 JSON)</li>
+          <li>10분 주기 서버 수집 + 캐시 유지(클라이언트 요청 시 즉시 응답)</li>
         </ul>
       </section>
 
       <section>
-        <h2>무료 소스 선정</h2>
+        <h2>데이터 소스(무료)</h2>
         <ul>
-          <li>밈: <code>r/memes</code>, <code>r/dankmemes</code>, <code>r/MemeEconomy</code></li>
-          <li>유행: <code>r/streetwear</code>, <code>r/fashion</code>, <code>r/food</code>, <code>r/sneakers</code></li>
-          <li>챌린지: <code>r/challenges</code>, <code>r/dance</code>, <code>r/TikTokCringe</code></li>
+          <li>밈: <code>r/hanguk</code>, <code>r/korea</code>, <code>r/memes</code>, <code>r/dankmemes</code></li>
+          <li>유행: <code>r/korea</code>, <code>r/hanguk</code>, <code>r/koreanfood</code>, <code>r/kbeauty</code>, <code>r/sneakers</code></li>
+          <li>챌린지: <code>r/kpop</code>, <code>r/koreanvariety</code>, <code>r/TikTokCringe</code>, <code>r/dance</code></li>
+          <li>한국어/한국 커뮤니티에 가중치 적용(로케일 점수)</li>
         </ul>
       </section>
 
       <section>
-        <h2>서버 실행 방법</h2>
+        <h2>로컬 운영 확인</h2>
         <ul>
           <li><code>node project/server.js</code></li>
-          <li>브라우저 접속: <code>http://127.0.0.1:8787/meme-prototype.html</code></li>
-          <li>스냅샷 확인: <code>http://127.0.0.1:8787/api/snapshot?period=today</code></li>
+          <li>스냅샷 확인: <code>curl "http://127.0.0.1:8787/api/snapshot?period=today"</code></li>
+          <li>상태 확인: <code>curl "http://127.0.0.1:8787/api/health"</code></li>
         </ul>
       </section>
 
       <section>
-        <h2>스코어 계산 방식(현재)</h2>
+        <h2>랭킹 계산 방식</h2>
         <ul>
           <li>기본 점수: <code>ups + num_comments * 2</code></li>
-          <li>기간 보정: <code>today/week/month/quarter</code> 가중치와 시간 감쇠 적용</li>
-          <li>카테고리별 상위 12개 반환, 상위 3개에 배지 부여</li>
+          <li>기간 보정: <code>today/week/month/quarter</code> 가중치 + 시간 감쇠</li>
+          <li>로케일 보정: 한글 제목/한국 관련 소스 가중치 추가</li>
+          <li>카테고리별 상위 12개 반환, 상위 3개 배지 부여</li>
         </ul>
       </section>
 
       <section>
-        <h2>다음 단계</h2>
+        <h2>운영 TODO</h2>
         <ul>
-          <li>중복 키워드 통합(유사 제목 클러스터링)</li>
-          <li>한국 소스 추가(공개 RSS/공식 API 우선)</li>
-          <li>서버 캐시(메모리/파일)로 Reddit 호출량 절감</li>
+          <li>API 버전 고정: <code>/api/v1/snapshot</code></li>
+          <li>DB 전환(SQLite -&gt; PostgreSQL)</li>
+          <li>수집 워커 분리(API 프로세스와 독립)</li>
+          <li>모니터링/알림, 재시도 정책, 장애 시 마지막 정상 데이터 유지</li>
         </ul>
       </section>
     </div>

@@ -1,18 +1,21 @@
 const http = require("http");
 const https = require("https");
-const fs = require("fs");
-const path = require("path");
 const { URL } = require("url");
 
-const HOST = "127.0.0.1";
-const PORT = 8787;
-const ROOT = __dirname;
+const HOST = process.env.HOST || "0.0.0.0";
+const PORT = Number(process.env.PORT || 8787);
+const REFRESH_MS = Number(process.env.REFRESH_MS || 10 * 60 * 1000);
+
+const PERIODS = ["today", "week", "month", "quarter"];
+const CATEGORY_ORDER = ["meme", "trend", "challenge"];
 
 const CATEGORY_SUBREDDITS = {
-  meme: ["memes", "dankmemes", "MemeEconomy"],
-  trend: ["streetwear", "fashion", "food", "sneakers"],
-  challenge: ["challenges", "dance", "TikTokCringe"]
+  meme: ["hanguk", "korea", "memes", "dankmemes", "MemeEconomy"],
+  trend: ["korea", "hanguk", "koreanfood", "kbeauty", "sneakers", "food"],
+  challenge: ["kpop", "koreanvariety", "TikTokCringe", "dance"]
 };
+
+const KOREAN_SOURCE_HINTS = ["korea", "hanguk", "korean", "kpop", "kbeauty"];
 
 const PERIOD_WEIGHT = {
   today: 1.0,
@@ -28,42 +31,48 @@ const PERIOD_DECAY = {
   quarter: 15
 };
 
-const CONTENT_TYPE = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".js": "application/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8"
+const runtime = {
+  snapshots: {
+    today: null,
+    week: null,
+    month: null,
+    quarter: null
+  },
+  refreshing: false,
+  lastRefreshAt: 0,
+  lastSuccessAt: 0,
+  lastError: ""
 };
 
 function text(v) {
   return typeof v === "string" ? v : "";
 }
 
-function formatPostedAt(createdUtc) {
-  if (!createdUtc) return "";
-  return new Date(createdUtc * 1000).toISOString();
+function toPeriod(value) {
+  return PERIODS.includes(value) ? value : "today";
+}
+
+function hasHangul(value) {
+  return /[가-힣]/.test(text(value));
+}
+
+function isKoreanLeaningSubreddit(name) {
+  const safe = text(name).toLowerCase();
+  return KOREAN_SOURCE_HINTS.some((hint) => safe.includes(hint));
 }
 
 function sendJson(res, status, data) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
-    "Access-Control-Allow-Origin": "*"
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "no-store"
   });
   res.end(JSON.stringify(data));
 }
 
-function sendFile(res, filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  const type = CONTENT_TYPE[ext] || "application/octet-stream";
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-      res.end("Not found");
-      return;
-    }
-    res.writeHead(200, { "Content-Type": type });
-    res.end(content);
-  });
+function formatPostedAt(createdUtc) {
+  if (!createdUtc) return "";
+  return new Date(createdUtc * 1000).toISOString();
 }
 
 function fetchJson(rawUrl, headers = {}) {
@@ -98,15 +107,11 @@ function fetchJson(rawUrl, headers = {}) {
         });
       }
     );
+
     req.on("error", reject);
     req.setTimeout(10000, () => req.destroy(new Error("request_timeout")));
     req.end();
   });
-}
-
-function sanitizePath(urlPathname) {
-  const normalized = path.normalize(urlPathname).replace(/^(\.\.[\/\\])+/, "");
-  return path.join(ROOT, normalized === "/" ? "meme-prototype.html" : normalized);
 }
 
 function scoreByPeriod(rawScore, createdUtc, period) {
@@ -123,14 +128,14 @@ function toBadge(index) {
   return "down";
 }
 
-function buildDetail(category, post) {
+function buildDetail(post) {
   const mediaType = post.is_video
     ? "video"
     : post.post_hint === "image"
       ? "image"
       : "text_or_link";
 
-  const base = {
+  return {
     summary: text(post.selftext).trim() || text(post.title),
     source: `r/${text(post.subreddit)}`,
     author: text(post.author) ? `u/${text(post.author)}` : "",
@@ -141,12 +146,6 @@ function buildDetail(category, post) {
       ups: post.ups || 0,
       comments: post.num_comments || 0
     }
-  };
-
-  if (category === "meme") return base;
-  if (category === "trend") return base;
-  return {
-    ...base
   };
 }
 
@@ -159,95 +158,12 @@ function linksFromPost(post) {
   ];
 }
 
-async function fetchSubredditHot(subreddit, limit = 20) {
+async function fetchSubredditHot(subreddit, limit = 25) {
   const endpoint = `https://www.reddit.com/r/${subreddit}/hot.json?limit=${limit}&raw_json=1`;
   const data = await fetchJson(endpoint, {
-    "User-Agent": "meme-radar/0.1 (free-source-prototype)"
+    "User-Agent": "meme-radar/0.2 (mobile-backend)"
   });
-  return data.data.children.map((c) => c.data);
-}
-
-async function fetchWikipediaSummary(query) {
-  const openSearchUrl = `https://ko.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=1&namespace=0&format=json`;
-  const openSearch = await fetchJson(openSearchUrl, {
-    "User-Agent": "meme-radar/0.1 (free-source-prototype)"
-  }).catch(() => null);
-  if (!openSearch) return null;
-  const bestTitle = openSearch?.[1]?.[0];
-  if (!bestTitle) return null;
-
-  const summaryUrl = `https://ko.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle)}`;
-  const summary = await fetchJson(summaryUrl, {
-    "User-Agent": "meme-radar/0.1 (free-source-prototype)"
-  }).catch(() => null);
-  if (!summary) return null;
-  return {
-    source: "Wikipedia",
-    title: text(summary.title) || bestTitle,
-    summary: text(summary.extract),
-    url: text(summary.content_urls?.desktop?.page)
-  };
-}
-
-async function fetchRedditRelated(query, limit = 5) {
-  const endpoint = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=${limit}&sort=top&t=week&raw_json=1`;
-  const data = await fetchJson(endpoint, {
-    "User-Agent": "meme-radar/0.1 (free-source-prototype)"
-  }).catch(() => null);
-  if (!data) return null;
-  const items = (data?.data?.children || []).map((c) => c.data).filter(Boolean);
-  return {
-    source: "Reddit",
-    count: items.length,
-    references: items.slice(0, 3).map((item) => ({
-      title: text(item.title),
-      url: `https://www.reddit.com${text(item.permalink)}`
-    }))
-  };
-}
-
-async function collectDetailEnrichment(title, category) {
-  const safeTitle = text(title).trim();
-  const safeCategory = text(category).trim();
-  if (!safeTitle) {
-    return {
-      summary: "",
-      references: [],
-      meta: { category: safeCategory, fetchedAt: Date.now(), providers: [] }
-    };
-  }
-
-  const [wiki, related] = await Promise.all([
-    fetchWikipediaSummary(safeTitle),
-    fetchRedditRelated(`${safeTitle} ${safeCategory}`)
-  ]);
-
-  const refs = [];
-  if (wiki?.url) refs.push({ label: "위키 요약", url: wiki.url });
-  if (related?.references?.length) {
-    related.references.forEach((r, idx) => {
-      refs.push({ label: `관련 글 ${idx + 1}`, url: r.url });
-    });
-  }
-
-  let summary = "";
-  if (wiki?.summary) {
-    summary = wiki.summary;
-  } else if (related?.count) {
-    summary = `최근 1주 내 관련 게시글 ${related.count}건이 확인되었습니다.`;
-  } else {
-    summary = "외부 공개 소스에서 요약 정보를 찾지 못했습니다.";
-  }
-
-  return {
-    summary,
-    references: refs,
-    meta: {
-      category: safeCategory,
-      fetchedAt: Date.now(),
-      providers: [wiki ? "wikipedia" : null, related ? "reddit" : null].filter(Boolean)
-    }
-  };
+  return (data?.data?.children || []).map((c) => c.data).filter(Boolean);
 }
 
 async function collectCategory(category, period) {
@@ -257,93 +173,173 @@ async function collectCategory(category, period) {
     .filter((r) => r.status === "fulfilled")
     .flatMap((r) => r.value);
 
+  const dedupe = new Set();
   const ranked = posts
-    .filter((p) => !p.stickied && p.title)
+    .filter((p) => p && !p.stickied && p.title && p.id)
+    .filter((post) => {
+      const key = `${post.subreddit}_${post.id}`;
+      if (dedupe.has(key)) return false;
+      dedupe.add(key);
+      return true;
+    })
     .map((post) => {
       const raw = (post.ups || 0) + (post.num_comments || 0) * 2;
+      const periodScore = scoreByPeriod(raw, post.created_utc, period);
+      const localeBoost = (hasHangul(post.title) ? 1.35 : 1) * (isKoreanLeaningSubreddit(post.subreddit) ? 1.2 : 1);
       return {
         id: `${category}-${post.id}`,
         category,
         title: post.title,
         reason: `좋아요 ${post.ups || 0}, 댓글 ${post.num_comments || 0}`,
+        localeScore: Math.round(periodScore * localeBoost),
         score: {
           today: scoreByPeriod(raw, post.created_utc, "today"),
           week: scoreByPeriod(raw, post.created_utc, "week"),
           month: scoreByPeriod(raw, post.created_utc, "month"),
           quarter: scoreByPeriod(raw, post.created_utc, "quarter")
         },
-        detail: buildDetail(category, post),
+        detail: buildDetail(post),
         links: linksFromPost(post)
       };
     })
-    .sort((a, b) => b.score[period] - a.score[period])
+    .sort((a, b) => b.localeScore - a.localeScore)
     .slice(0, 12)
-    .map((item, index) => ({ ...item, badge: toBadge(index) }));
+    .map((item, index) => ({
+      ...item,
+      badge: toBadge(index)
+    }))
+    .map(({ localeScore, ...item }) => item);
 
   return ranked;
 }
 
 async function collectSnapshot(period) {
-  const categories = ["meme", "trend", "challenge"];
-  const collected = await Promise.all(categories.map((c) => collectCategory(c, period)));
+  const collected = await Promise.all(CATEGORY_ORDER.map((c) => collectCategory(c, period)));
   const items = collected.flat();
   if (!items.length) {
     throw new Error("no_external_sources_available");
   }
   return {
     updatedAt: Date.now(),
+    period,
     items
+  };
+}
+
+async function refreshPeriod(period) {
+  const snapshot = await collectSnapshot(period);
+  runtime.snapshots[period] = snapshot;
+  runtime.lastSuccessAt = Date.now();
+  return snapshot;
+}
+
+async function refreshAllPeriods() {
+  if (runtime.refreshing) return;
+  runtime.refreshing = true;
+  runtime.lastRefreshAt = Date.now();
+
+  try {
+    const results = await Promise.allSettled(PERIODS.map((period) => refreshPeriod(period)));
+    const rejected = results.filter((r) => r.status === "rejected");
+    runtime.lastError = rejected.length ? rejected[0].reason?.message || "refresh_failed" : "";
+  } catch (error) {
+    runtime.lastError = String(error?.message || error);
+  } finally {
+    runtime.refreshing = false;
+  }
+}
+
+function getHealth() {
+  const periods = {};
+  PERIODS.forEach((period) => {
+    const snapshot = runtime.snapshots[period];
+    periods[period] = {
+      updatedAt: snapshot?.updatedAt || 0,
+      itemCount: snapshot?.items?.length || 0
+    };
+  });
+
+  return {
+    ok: Boolean(runtime.lastSuccessAt),
+    refreshing: runtime.refreshing,
+    refreshMs: REFRESH_MS,
+    lastRefreshAt: runtime.lastRefreshAt,
+    lastSuccessAt: runtime.lastSuccessAt,
+    lastError: runtime.lastError,
+    periods
   };
 }
 
 const server = http.createServer(async (req, res) => {
   if (!req.url) {
-    sendJson(res, 400, { error: "bad request" });
+    sendJson(res, 400, { error: "bad_request" });
     return;
   }
 
   const url = new URL(req.url, `http://${HOST}:${PORT}`);
   const pathname = decodeURIComponent(url.pathname);
 
-  if (pathname === "/api/snapshot") {
-    const period = ["today", "week", "month", "quarter"].includes(url.searchParams.get("period"))
-      ? url.searchParams.get("period")
-      : "today";
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+    });
+    res.end();
+    return;
+  }
+
+  if (pathname === "/api/health") {
+    sendJson(res, 200, getHealth());
+    return;
+  }
+
+  if (pathname === "/api/snapshot" || pathname === "/api/v1/snapshot") {
+    const period = toPeriod(url.searchParams.get("period"));
+    const force = url.searchParams.get("force") === "1";
+
     try {
-      const snapshot = await collectSnapshot(period);
+      if (force || !runtime.snapshots[period]) {
+        await refreshPeriod(period);
+      }
+      const snapshot = runtime.snapshots[period];
+      if (!snapshot) {
+        sendJson(res, 503, { error: "snapshot_unavailable", period });
+        return;
+      }
       sendJson(res, 200, snapshot);
+      return;
     } catch (error) {
+      const fallback = runtime.snapshots[period];
+      if (fallback) {
+        sendJson(res, 200, fallback);
+        return;
+      }
       sendJson(res, 500, {
         error: "snapshot_failed",
-        message: String(error.message || error)
+        message: String(error?.message || error),
+        period
       });
+      return;
     }
-    return;
   }
 
-  if (pathname === "/api/detail-enrich") {
-    const title = url.searchParams.get("title") || "";
-    const category = url.searchParams.get("category") || "";
-    try {
-      const enriched = await collectDetailEnrichment(title, category);
-      sendJson(res, 200, enriched);
-    } catch (error) {
-      sendJson(res, 500, {
-        error: "detail_enrich_failed",
-        message: String(error.message || error)
-      });
-    }
-    return;
-  }
-
-  const filePath = sanitizePath(pathname);
-  if (!filePath.startsWith(ROOT)) {
-    sendJson(res, 403, { error: "forbidden" });
-    return;
-  }
-  sendFile(res, filePath);
+  sendJson(res, 404, {
+    error: "not_found",
+    message: "API endpoint only",
+    endpoints: ["/api/health", "/api/snapshot", "/api/v1/snapshot"]
+  });
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Meme radar server: http://${HOST}:${PORT}/meme-prototype.html`);
+  console.log(`Meme API server: http://${HOST}:${PORT}`);
+  refreshAllPeriods().catch((error) => {
+    runtime.lastError = String(error?.message || error);
+  });
+  setInterval(() => {
+    refreshAllPeriods().catch((error) => {
+      runtime.lastError = String(error?.message || error);
+    });
+  }, REFRESH_MS);
 });
+
